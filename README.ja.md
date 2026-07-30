@@ -2,10 +2,10 @@
 
 # ComiRadar
 
-[![CI](https://github.com/sixtdreanight/ComiRadar/actions/workflows/ci.yml/badge.svg)](https://github.com/sixtdreanight/ComiRadar/actions/workflows/ci.yml)
+[![CI](https://github.com/sixtdreanight/anime-con-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/sixtdreanight/anime-con-radar/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Status](https://img.shields.io/badge/status-beta-orange)](https://github.com/sixtdreanight/ComiRadar)
+[![Status](https://img.shields.io/badge/status-beta-orange)](https://github.com/sixtdreanight/anime-con-radar)
 
 **今後90日間の全国の同人誌即売会・漫画イベント・アニソンライブなどのイベント情報を自動検出します。**
 

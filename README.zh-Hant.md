@@ -2,10 +2,10 @@
 
 # ComiRadar
 
-[![CI](https://github.com/sixtdreanight/ComiRadar/actions/workflows/ci.yml/badge.svg)](https://github.com/sixtdreanight/ComiRadar/actions/workflows/ci.yml)
+[![CI](https://github.com/sixtdreanight/anime-con-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/sixtdreanight/anime-con-radar/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Status](https://img.shields.io/badge/status-beta-orange)](https://github.com/sixtdreanight/ComiRadar)
+[![Status](https://img.shields.io/badge/status-beta-orange)](https://github.com/sixtdreanight/anime-con-radar)
 
 **自動發現未來 90 天內全國漫展、同人展、二次元演唱會等演出資訊。**
 
