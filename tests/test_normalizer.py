@@ -3,7 +3,7 @@ from chinese_scraper_utils import guess_category as _guess_category
 from chinese_scraper_utils import normalize_city as _normalize_city
 from chinese_scraper_utils import parse_date as _parse_date
 
-from pipeline.normalizer import _format_price, _parse_tlabel
+from pipeline.normalizer import _parse_tlabel
 
 
 def test_normalize_city_strips_shi():
@@ -79,22 +79,6 @@ def test_parse_tlabel_empty():
     start, end = _parse_tlabel("")
     assert start == ""
     assert end is None
-
-
-def test_format_price_range():
-    assert _format_price(88, 188) == "¥88-188"
-
-
-def test_format_price_single_min():
-    assert _format_price(88, 0) == "¥88起"
-
-
-def test_format_price_single():
-    assert _format_price(None, 188) == "¥188"
-
-
-def test_format_price_none():
-    assert _format_price(None, None) == "待定"
 
 
 def test_normalize_bilibili():

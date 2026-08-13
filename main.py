@@ -51,7 +51,11 @@ def cmd_export(args):
                 cutoff = e.end_date
             else:
                 # No end date — assume runs 7 days
-                cutoff = (date.fromisoformat(e.start_date) + timedelta(days=7)).isoformat()
+                try:
+                    cutoff = (date.fromisoformat(e.start_date) + timedelta(days=7)).isoformat()
+                except ValueError:
+                    # Malformed/LLM-generated start date — keep the event, treat as active today
+                    cutoff = today
             if cutoff >= today and e.status != "已结束":
                 active.append(e)
         data = [_sanitize_event(_event_to_dict(e)) for e in active]

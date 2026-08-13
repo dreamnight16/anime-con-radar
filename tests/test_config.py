@@ -1,8 +1,4 @@
-from config import DAYS_AHEAD, DB_PATH, MAX_RETRIES, RATE_LIMIT, SCRAPE_TIMEOUT
-
-
-def test_default_days_ahead():
-    assert DAYS_AHEAD == 90
+from config import DB_PATH, MAX_RETRIES, RATE_LIMIT, SCRAPE_TIMEOUT
 
 
 def test_scrape_timeout():

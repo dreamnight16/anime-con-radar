@@ -72,12 +72,6 @@ def get_all_events(session: Session) -> list[EventModel]:
     return [_row_to_model(r) for r in rows]
 
 
-def get_events_by_fingerprint(session: Session, fp: str) -> list[EventModel]:
-    stmt = select(EventRecord).where(EventRecord.fingerprint == fp)
-    rows = session.execute(stmt).scalars().all()
-    return [_row_to_model(r) for r in rows]
-
-
 def _row_to_model(row: EventRecord) -> EventModel:
     return EventModel(
         id=row.id,

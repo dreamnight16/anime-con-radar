@@ -13,7 +13,6 @@ BASE_DIR = Path(__file__).parent
 DB_PATH = BASE_DIR / "events.db"
 HEALTH_PATH = BASE_DIR / "health.json"
 EXPORT_PATH = Path(os.environ.get("COMI_EXPORT_PATH", BASE_DIR / "events.json"))
-DAYS_AHEAD = 90
 SCRAPE_TIMEOUT = 30
 MAX_RETRIES = 3
 RATE_LIMIT = 2.0

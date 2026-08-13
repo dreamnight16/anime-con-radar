@@ -167,20 +167,6 @@ def _(raw: dict) -> EventModel:
     )
 
 
-def _format_price(low, high) -> str:
-    if low is None and high is None:
-        return "待定"
-    l = int(low) if low else 0
-    h = int(high) if high else 0
-    if l and h and l != h:
-        return f"¥{l}-{h}"
-    if l:
-        return f"¥{l}起"
-    if h:
-        return f"¥{h}"
-    return "待定"
-
-
 @register("weibo")
 def _(raw: dict) -> EventModel:
     # AI output format: {title, date, endDate, city, venue, category, confidence}
