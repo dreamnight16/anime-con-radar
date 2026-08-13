@@ -2,10 +2,10 @@
 
 # ComiRadar
 
-[![CI](https://github.com/sixtdreanight/anime-con-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/sixtdreanight/anime-con-radar/actions/workflows/ci.yml)
+[![CI](https://github.com/dreamnight16/anime-con-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/dreamnight16/anime-con-radar/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Status](https://img.shields.io/badge/status-beta-orange)](https://github.com/sixtdreanight/anime-con-radar)
+[![Status](https://img.shields.io/badge/status-beta-orange)](https://github.com/dreamnight16/anime-con-radar)
 
 **今後90日間の全国の同人誌即売会・漫画イベント・アニソンライブなどのイベント情報を自動検出します。**
 
@@ -68,7 +68,7 @@ NOTIFIERS = {
 
 ## ブログ連携
 
-このリポジトリは git submodule として [Blog-mizuki](https://github.com/sixtdreanight/Blog-mizuki) を導入しており、GitHub Actions で定期的に実行され、データは [イベントページ](https://dreamnight.net.cn/anime-events) に自動反映されます。
+このリポジトリは git submodule として [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki) を導入しており、GitHub Actions で定期的に実行され、データは [イベントページ](https://dreamnight.net.cn/anime-events) に自動反映されます。
 
 ## 技術スタック
 
@@ -79,9 +79,9 @@ NOTIFIERS = {
 
 ## 関連プロジェクト
 
-- [chinese-scraper-utils](https://github.com/sixtdreanight/chinese-scraper-utils) — 本プロジェクトから抽出した汎用ユーティリティライブラリ
-- [Blog-mizuki](https://github.com/sixtdreanight/Blog-mizuki) — イベントデータを dreamnight.net.cn/anime-events で表示（現在）
-- [myBlog](https://github.com/sixtdreanight/myBlog) — 旧ブログ（アーカイブ済み）
+- [chinese-scraper-utils](https://github.com/dreamnight16/chinese-scraper-utils) — 本プロジェクトから抽出した汎用ユーティリティライブラリ
+- [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki) — イベントデータを dreamnight.net.cn/anime-events で表示（現在）
+- [myBlog](https://github.com/dreamnight16/myBlog) — 旧ブログ（アーカイブ済み）
 
 ## ライセンス
 

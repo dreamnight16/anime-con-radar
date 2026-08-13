@@ -2,10 +2,10 @@
 
 # ComiRadar
 
-[![CI](https://github.com/sixtdreanight/anime-con-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/sixtdreanight/anime-con-radar/actions/workflows/ci.yml)
+[![CI](https://github.com/dreamnight16/anime-con-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/dreamnight16/anime-con-radar/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Status](https://img.shields.io/badge/status-beta-orange)](https://github.com/sixtdreanight/anime-con-radar)
+[![Status](https://img.shields.io/badge/status-beta-orange)](https://github.com/dreamnight16/anime-con-radar)
 
 **自动发现未来 90 天内全国漫展、同人展、二次元演唱会等演出信息。**
 
@@ -68,7 +68,7 @@ NOTIFIERS = {
 
 ## 与博客集成
 
-本仓库通过 git submodule 引入 [Blog-mizuki](https://github.com/sixtdreanight/Blog-mizuki)，由 GitHub Actions 定时运行，数据自动更新到 [演出页面](https://dreamnight.net.cn/anime-events)。
+本仓库通过 git submodule 引入 [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki)，由 GitHub Actions 定时运行，数据自动更新到 [演出页面](https://dreamnight.net.cn/anime-events)。
 
 ## 技术栈
 
@@ -79,9 +79,9 @@ NOTIFIERS = {
 
 ## 相关项目
 
-- [chinese-scraper-utils](https://github.com/sixtdreanight/chinese-scraper-utils) — 从本项目抽离的通用工具库
-- [Blog-mizuki](https://github.com/sixtdreanight/Blog-mizuki) — 演出数据展示在 dreamnight.net.cn/anime-events（当前）
-- [myBlog](https://github.com/sixtdreanight/myBlog) — 旧博客（已归档）
+- [chinese-scraper-utils](https://github.com/dreamnight16/chinese-scraper-utils) — 从本项目抽离的通用工具库
+- [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki) — 演出数据展示在 dreamnight.net.cn/anime-events（当前）
+- [myBlog](https://github.com/dreamnight16/myBlog) — 旧博客（已归档）
 
 ## 许可证
 

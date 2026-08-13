@@ -73,9 +73,9 @@ testpaths = ["tests"]
 asyncio_mode = "auto"
 
 [project.urls]
-Homepage = "https://github.com/sixtdreanight/ComiRadar"
-Repository = "https://github.com/sixtdreanight/ComiRadar.git"
-Issues = "https://github.com/sixtdreanight/ComiRadar/issues"
+Homepage = "https://github.com/dreamnight16/ComiRadar"
+Repository = "https://github.com/dreamnight16/ComiRadar.git"
+Issues = "https://github.com/dreamnight16/ComiRadar/issues"
 
 [build-system]
 requires = ["setuptools>=68"]

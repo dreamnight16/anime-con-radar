@@ -5,7 +5,7 @@ Thanks for your interest in contributing!
 ## Getting Started
 
 ```bash
-git clone https://github.com/sixtdreanight/anime-con-radar.git
+git clone https://github.com/dreamnight16/anime-con-radar.git
 cd ComiRadar
 pip install -r requirements.txt
 pytest
@@ -57,6 +57,6 @@ Types: `feat` `fix` `refactor` `test` `docs` `chore` `perf` `ci`
 
 ## Questions?
 
-Open a [discussion](https://github.com/sixtdreanight/anime-con-radar/discussions).
+Open a [discussion](https://github.com/dreamnight16/anime-con-radar/discussions).
 
 [conv]: https://www.conventionalcommits.org/

@@ -2,10 +2,10 @@
 
 # ComiRadar
 
-[![CI](https://github.com/sixtdreanight/anime-con-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/sixtdreanight/anime-con-radar/actions/workflows/ci.yml)
+[![CI](https://github.com/dreamnight16/anime-con-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/dreamnight16/anime-con-radar/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Status](https://img.shields.io/badge/status-beta-orange)](https://github.com/sixtdreanight/anime-con-radar)
+[![Status](https://img.shields.io/badge/status-beta-orange)](https://github.com/dreamnight16/anime-con-radar)
 
 **Automatically discovers anime cons, doujin fairs, and ACG concerts across China for the next 90 days.**
 
@@ -68,7 +68,7 @@ NOTIFIERS = {
 
 ## Blog Integration
 
-This repo is included as a git submodule in [Blog-mizuki](https://github.com/sixtdreanight/Blog-mizuki). GitHub Actions runs the scraper on schedule, and results auto-sync to the [events page](https://dreamnight.net.cn/anime-events).
+This repo is included as a git submodule in [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki). GitHub Actions runs the scraper on schedule, and results auto-sync to the [events page](https://dreamnight.net.cn/anime-events).
 
 ## Tech Stack
 
@@ -79,9 +79,9 @@ This repo is included as a git submodule in [Blog-mizuki](https://github.com/six
 
 ## Related
 
-- [chinese-scraper-utils](https://github.com/sixtdreanight/chinese-scraper-utils) — Shared utilities extracted from this project
-- [Blog-mizuki](https://github.com/sixtdreanight/Blog-mizuki) — Events data displayed at dreamnight.net.cn/anime-events (current)
-- [myBlog](https://github.com/sixtdreanight/myBlog) — Previous blog (archived)
+- [chinese-scraper-utils](https://github.com/dreamnight16/chinese-scraper-utils) — Shared utilities extracted from this project
+- [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki) — Events data displayed at dreamnight.net.cn/anime-events (current)
+- [myBlog](https://github.com/dreamnight16/myBlog) — Previous blog (archived)
 
 ## License
 

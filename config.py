@@ -19,8 +19,8 @@ MAX_RETRIES = 3
 RATE_LIMIT = 2.0
 
 NOTIFIERS: dict[str, dict] = {
-    "serverchan": {"key": ""},
-    "bark": {"url": ""},
+    "serverchan": {"key": os.environ.get("SERVERCHAN_KEY", "")},
+    "bark": {"url": os.environ.get("BARK_URL", "")},
 }
 
 # B站 Cookie 用于绕过风控。在浏览器登录 show.bilibili.com 后，

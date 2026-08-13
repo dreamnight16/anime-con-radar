@@ -25,7 +25,10 @@ class Orchestrator:
         """Collect all registered scraper classes, including optional imports."""
         scrapers = list(AbstractScraper._registry.values())
         for mod_path in [
-            "scrapers.ticketing.bilibili", "scrapers.social.weibo",
+            "scrapers.ticketing.bilibili", "scrapers.ticketing.damai",
+            "scrapers.ticketing.maoyan", "scrapers.ticketing.showstart",
+            "scrapers.ticketing.piaoxingqiu", "scrapers.ticketing.yongle",
+            "scrapers.social.weibo",
             "scrapers.nyato", "scrapers.chinajoy", "scrapers.ciefc",
         ]:
             try:
@@ -36,6 +39,12 @@ class Orchestrator:
                     scrapers.append(cls)
             except (ImportError, AttributeError):
                 pass
+        # Scrapers whose class name doesn't match the naive capitalize() derivation
+        # (e.g. PiaoXingQiuScraper for module "piaoxingqiu") still register via
+        # __init_subclass__; merge any newly-registered subclasses so they aren't missed.
+        for cls in AbstractScraper._registry.values():
+            if cls not in scrapers:
+                scrapers.append(cls)
         return [s for s in scrapers if is_enabled(getattr(s, "platform", "unknown"))]
 
     async def scrape_ticketing(self):
