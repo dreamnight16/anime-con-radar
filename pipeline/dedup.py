@@ -61,7 +61,7 @@ def deduplicate(events: list[EventModel]) -> list[EventModel]:
     result = list(seen.values())
     result.sort(key=lambda x: x.start_date or "")
 
-    merged = []
+    merged: list[EventModel] = []
     for e in result:
         found = False
         for i, m in enumerate(merged):

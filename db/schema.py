@@ -1,8 +1,8 @@
 from datetime import UTC, datetime
 
 from pydantic import BaseModel as PydanticBase
-from sqlalchemy import Column, DateTime, Float, String, create_engine, event
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import DateTime, Float, String, create_engine, event
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from config import DB_PATH
 
@@ -17,24 +17,26 @@ class Base(DeclarativeBase):
 
 class EventRecord(Base):
     __tablename__ = "events"
-    id: str = Column(String, primary_key=True)
-    source_type: str = Column(String, nullable=False)
-    source_name: str = Column(String, nullable=False)
-    source_id: str = Column(String, nullable=False)
-    title: str = Column(String, nullable=False)
-    category: str = Column(String, default="")
-    city: str = Column(String, default="")
-    venue: str = Column(String, default="")
-    start_date: str = Column(String, nullable=False, index=True)
-    end_date: str | None = Column(String, nullable=True)
-    price_range: str | None = Column(String, nullable=True)
-    ticket_url: str | None = Column(String, nullable=True)
-    image_url: str | None = Column(String, nullable=True)
-    status: str = Column(String, default="预告")
-    confidence: float = Column(Float, default=1.0)
-    fingerprint: str | None = Column(String, nullable=True, index=True)
-    canonical_id: str | None = Column(String, nullable=True)
-    scraped_at: datetime = Column(DateTime, default=_utcnow, index=True)
+    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    source_type: Mapped[str] = mapped_column(String, nullable=False)
+    source_name: Mapped[str] = mapped_column(String, nullable=False)
+    source_id: Mapped[str] = mapped_column(String, nullable=False)
+    title: Mapped[str] = mapped_column(String, nullable=False)
+    category: Mapped[str] = mapped_column(String, default="", nullable=False)
+    city: Mapped[str] = mapped_column(String, default="", nullable=False)
+    venue: Mapped[str] = mapped_column(String, default="", nullable=False)
+    start_date: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    end_date: Mapped[str | None] = mapped_column(String, nullable=True)
+    price_range: Mapped[str | None] = mapped_column(String, nullable=True)
+    ticket_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    image_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    status: Mapped[str] = mapped_column(String, default="预告", nullable=False)
+    confidence: Mapped[float] = mapped_column(Float, default=1.0, nullable=False)
+    fingerprint: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    canonical_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    scraped_at: Mapped[datetime] = mapped_column(
+        DateTime, default=_utcnow, index=True, nullable=False
+    )
 
 
 engine = create_engine(f"sqlite:///{DB_PATH}", echo=False)

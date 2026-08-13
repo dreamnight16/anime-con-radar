@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from datetime import datetime
 from uuid import uuid4
 
@@ -13,7 +14,7 @@ from chinese_scraper_utils import (
 from db.schema import EventModel
 from pipeline.extractor import _extract_title, _extract_venue
 
-NORMALIZERS: dict[str, callable] = {}
+NORMALIZERS: dict[str, Callable[[dict], EventModel]] = {}
 
 
 def register(platform: str):
@@ -27,7 +28,7 @@ def normalize(platform: str, raw_events: list[dict]) -> list[EventModel]:
     return [e for raw in raw_events if (e := _try_normalize(fn, raw)) is not None]
 
 
-def _try_normalize(fn, raw: dict) -> EventModel | None:
+def _try_normalize(fn: Callable[[dict], EventModel], raw: dict) -> EventModel | None:
     try:
         return fn(raw)
     except Exception as e:
@@ -142,6 +143,7 @@ def _(raw: dict) -> EventModel:
         source_id=sid,
         title=raw.get("title", ""),
         category=guess_category(raw.get("title", "")),
+        start_date="",
         ticket_url=raw.get("url", ""),
         status="售票中",
         confidence=1.0,
@@ -158,6 +160,7 @@ def _(raw: dict) -> EventModel:
         source_id=sid,
         title=raw.get("title", ""),
         category=guess_category(raw.get("title", "")),
+        start_date="",
         ticket_url=raw.get("url", ""),
         status="售票中",
         confidence=1.0,

@@ -35,7 +35,7 @@ class DamaiScraper(TicketingScraper):
         data_str = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
         raw = f"{token}&{t}&{self.APP_KEY}&{data_str}"
         # NOTE: MD5 为服务端要求的签名算法，无法单方面更换
-        sign = hashlib.md5(raw.encode()).hexdigest()
+        sign = hashlib.md5(raw.encode()).hexdigest()  # nosec B324  # MD5 required by Damai API signing
         return {
             "jsv": "2.7.2", "appKey": self.APP_KEY, "t": t, "sign": sign,
             "api": "mtop.alibaba.damai.detail.search.search", "v": "1.0",
