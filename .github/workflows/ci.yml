@@ -14,13 +14,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install ruff
+        run: uv sync --locked --extra dev --no-install-project
       - name: Lint
-        run: ruff check .
+        run: uv run --no-sync ruff check .
 
   typecheck:
     runs-on: ubuntu-latest
@@ -29,13 +27,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install mypy types-pyyaml
+        run: uv sync --locked --extra dev --no-install-project
       - name: Type check
-        run: mypy main.py config.py logger.py pipeline/ scrapers/ db/ notifiers/ --ignore-missing-imports
+        run: uv run --no-sync mypy main.py config.py logger.py pipeline/ scrapers/ db/ notifiers/ --ignore-missing-imports
 
   security:
     runs-on: ubuntu-latest
@@ -44,15 +40,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install bandit pip-audit
+          uv sync --locked --extra dev --no-install-project
+          uv pip install pip-audit
       - name: Security scan
-        run: bandit -r . -x tests/ -ll
+        run: uv run --no-sync bandit -r . -x tests/ -ll
       - name: Audit dependencies for known vulnerabilities
-        run: pip-audit
+        run: uv run --no-sync pip-audit
 
   test:
     runs-on: ubuntu-latest
@@ -65,10 +61,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - uses: astral-sh/setup-uv@v5
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-asyncio pytest-cov
+        run: uv sync --locked --extra dev --no-install-project
       - name: Run tests with coverage
-        run: python -m pytest tests/ -v --cov --cov-report=term-missing --cov-fail-under=70
+        run: uv run --no-sync python -m pytest tests/ -v --cov --cov-report=term-missing --cov-fail-under=70
