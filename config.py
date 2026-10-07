@@ -35,7 +35,7 @@ def validate_config() -> list[str]:
     """Check required config at startup. Returns list of warnings."""
     warnings: list[str] = []
     if not os.environ.get("DEEPSEEK_API_KEY"):
-        warnings.append("DEEPSEEK_API_KEY not set — LLM extraction & hotspot discovery disabled")
+        warnings.append("DEEPSEEK_API_KEY not set — deterministic social parsing will be used")
     if not any(BILIBILI_COOKIES.values()):
         warnings.append("BILIBILI_COOKIES not set — Bilibili scraper may fail")
     if not os.environ.get("DAMAI_APP_KEY"):

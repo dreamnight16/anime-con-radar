@@ -11,6 +11,38 @@ VENUE_KEYWORDS = [
     "美术馆", "博物馆", "科技馆", "livehouse", "live house", "LiveHouse",
 ]
 
+EVENT_TERMS = (
+    "活动", "演出", "演唱会", "音乐会", "舞台剧", "音乐节", "嘉年华", "见面会",
+    "ONLY", "CP展", "ComiCup", "ChinaJoy",
+)
+EXPLICIT_EVENT_TERMS = (
+    "漫展", "同人展", "展会", "会展", "动漫展", "展览", "博览会", "票务", "购票", "售票", "开票", "门票", "预售票",
+)
+
+
+def is_likely_event_post(
+    text: str,
+    *,
+    city: str | None = None,
+    date: str | None = None,
+    venue: str | None = None,
+) -> bool:
+    """Require an event term plus context, unless the text is explicitly event-related."""
+    if not text:
+        return False
+    normalized_text = text.casefold()
+    if not any(term.casefold() in normalized_text for term in EVENT_TERMS + EXPLICIT_EVENT_TERMS):
+        return False
+    if any(term.casefold() in normalized_text for term in EXPLICIT_EVENT_TERMS):
+        return True
+    if city is None:
+        city = extract_city(text)
+    if date is None:
+        date = extract_date(text)
+    if venue is None:
+        venue = _extract_venue(text)
+    return bool(city or date or venue)
+
 
 def extract_events(platform: str, raw_items: list[dict]) -> list[EventModel]:
     events = []
@@ -26,10 +58,12 @@ def extract_events(platform: str, raw_items: list[dict]) -> list[EventModel]:
 
 def _extract_one(platform: str, item: dict) -> EventModel | None:
     text = item.get("text", "")
-    title = _extract_title(text) or item.get("user", "") + " 发布的演出"
     city = extract_city(text)
     date = extract_date(text)
     venue = _extract_venue(text)
+    if not is_likely_event_post(text, city=city, date=date, venue=venue):
+        return None
+    title = _extract_title(text) or item.get("user", "") + " 发布的演出"
     event_id = stable_id(title, city, date)
     score = sum([bool(date), bool(city), bool(venue)])
     confidence = {3: 0.9, 2: 0.7, 1: 0.5}.get(score, 0.5)

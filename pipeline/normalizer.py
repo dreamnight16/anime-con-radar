@@ -12,9 +12,9 @@ from chinese_scraper_utils import (
 )
 
 from db.schema import EventModel
-from pipeline.extractor import _extract_title, _extract_venue
+from pipeline.extractor import _extract_title, _extract_venue, is_likely_event_post
 
-NORMALIZERS: dict[str, Callable[[dict], EventModel]] = {}
+NORMALIZERS: dict[str, Callable[[dict], EventModel | None]] = {}
 
 
 def register(platform: str):
@@ -28,7 +28,7 @@ def normalize(platform: str, raw_events: list[dict]) -> list[EventModel]:
     return [e for raw in raw_events if (e := _try_normalize(fn, raw)) is not None]
 
 
-def _try_normalize(fn: Callable[[dict], EventModel], raw: dict) -> EventModel | None:
+def _try_normalize(fn: Callable[[dict], EventModel | None], raw: dict) -> EventModel | None:
     try:
         return fn(raw)
     except Exception as e:
@@ -168,22 +168,24 @@ def _(raw: dict) -> EventModel:
 
 
 @register("weibo")
-def _(raw: dict) -> EventModel:
-    # AI output format: {title, date, endDate, city, venue, category, confidence}
-    ai_title = raw.get("title", "")
-    if ai_title:
-        sid = stable_id(ai_title, raw.get("city", ""), raw.get("date", ""))
+def _(raw: dict) -> EventModel | None:
+    # Optional structured extractor format: {title, date, endDate, city, venue,
+    # category, confidence}.
+    extracted_title = raw.get("title", "")
+    if extracted_title:
+        sid = stable_id(extracted_title, raw.get("city", ""), raw.get("date", ""))
         return EventModel(
             id=f"weibo_ai_{sid}",
             source_type="social",
             source_name="weibo",
             source_id=raw.get("_source", "weibo_ai"),
-            title=ai_title,
+            title=extracted_title,
             category=raw.get("category", "其他"),
             city=normalize_city(raw.get("city", "")),
             venue=raw.get("venue", ""),
             start_date=raw.get("date") or "",
             end_date=raw.get("endDate"),
+            ticket_url=raw.get("url") or None,
             status="预告",
             confidence=float(raw.get("confidence", 0.3)),
         )
@@ -193,6 +195,8 @@ def _(raw: dict) -> EventModel:
     city = extract_city(text)
     date = extract_date(text)
     venue = _extract_venue(text)
+    if not is_likely_event_post(text, city=city, date=date, venue=venue):
+        return None
     title = _extract_title(text)
     if not date and not city:
         date = datetime.now().strftime("%Y-%m-%d")
@@ -206,6 +210,7 @@ def _(raw: dict) -> EventModel:
         city=city,
         venue=venue,
         start_date=date or datetime.now().strftime("%Y-%m-%d"),
+        ticket_url=raw.get("url") or None,
         status="预告",
         confidence=0.3,
     )

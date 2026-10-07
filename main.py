@@ -54,7 +54,7 @@ def cmd_export(args):
                 try:
                     cutoff = (date.fromisoformat(e.start_date) + timedelta(days=7)).isoformat()
                 except ValueError:
-                    # Malformed/LLM-generated start date — keep the event, treat as active today
+                    # Malformed start date — keep the event, treat as active today
                     cutoff = today
             if cutoff >= today and e.status != "已结束":
                 active.append(e)

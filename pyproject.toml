@@ -18,7 +18,7 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "chinese-scraper-utils>=0.2.1",
+    "chinese-scraper-utils @ git+https://github.com/dreamnight16/chinese-scraper-utils.git@76580468b8efd491ef46860c1bd307dfc49d783b",
     "httpx>=0.28",
     "parsel>=1.10",
     "pydantic>=2.0",
@@ -32,6 +32,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+llm = ["openai>=1.0"]
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",

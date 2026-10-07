@@ -2,9 +2,8 @@
 # A full lockfile (pip-compile / pip freeze) is NOT committed because it cannot be
 # generated offline; transitive dependencies still float. Pinned versions are
 # audited for known vulnerabilities by `pip-audit` in CI (.github/workflows/ci.yml).
-# chinese-scraper-utils is pinned to the published PyPI release (0.2.1); the local
-# dev environment uses a newer git-only build (0.3.0) that is not on PyPI.
-chinese-scraper-utils==0.2.1
+# chinese-scraper-utils is pinned to a revision with optional model dependencies.
+chinese-scraper-utils @ git+https://github.com/dreamnight16/chinese-scraper-utils.git@76580468b8efd491ef46860c1bd307dfc49d783b
 httpx==0.28.1
 parsel==1.11.0
 pydantic==2.13.4

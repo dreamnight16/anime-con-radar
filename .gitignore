@@ -8,3 +8,6 @@ data/
 .env
 .ruff_cache/
 .mypy_cache/
+.venv/
+.pytest_cache/
+*.pyc

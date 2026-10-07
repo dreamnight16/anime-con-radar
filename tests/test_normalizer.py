@@ -317,6 +317,12 @@ def test_normalize_weibo_raw_text():
     assert e.confidence == 0.3
 
 
+def test_normalize_weibo_ordinary_post_is_ignored():
+    from pipeline.normalizer import normalize
+
+    assert normalize("weibo", [{"text": "今天开会讨论项目，天气也不错"}]) == []
+
+
 def test_normalize_chinajoy():
     from pipeline.normalizer import normalize
     raw = [{"startDate": "2026-07-31", "endDate": "2026-08-03", "title": "ChinaJoy 2026", "venue": "上海新国际博览中心"}]

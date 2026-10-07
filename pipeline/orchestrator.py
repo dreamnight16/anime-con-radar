@@ -48,7 +48,13 @@ class Orchestrator:
         return [s for s in scrapers if is_enabled(getattr(s, "platform", "unknown"))]
 
     async def scrape_ticketing(self):
-        scrapers = self._gather_scraper_classes()
+        scrapers = [
+            scraper for scraper in self._gather_scraper_classes()
+            if not (
+                issubclass(scraper, SocialScraper)
+                or getattr(scraper, "platform", "") == "weibo"
+            )
+        ]
         await self._run_batch(scrapers, "ticketing")
 
     async def scrape_social(self):
@@ -71,7 +77,7 @@ class Orchestrator:
             try:
                 scraper = cls()
                 raw = await scraper.scrape()
-                if issubclass(cls, SocialScraper) or getattr(cls, "platform", "") == "weibo":
+                if issubclass(cls, SocialScraper) and cls.platform != "weibo":
                     events = extract_events(cls.platform, raw)
                 else:
                     events = normalize(cls.platform, raw)

@@ -29,6 +29,8 @@ python main.py notify   # 推送通知（需配置密钥）
 python main.py run      # 一键三连
 ```
 
+需要可选的模型提取时，执行 `pip install openai`（或 `uv sync --extra llm --no-install-project`）并设置 `DEEPSEEK_API_KEY`。没有 SDK 或密钥时，社交帖文使用确定性解析。
+
 ## Docker
 
 ```bash
@@ -63,7 +65,7 @@ NOTIFIERS = {
 | `BILI_BILI_JCT` | B站 cookies 中的 `bili_jct` |
 | `DAMAI_M_H5_TK` | 大麦 cookies 中的 `m_h5_tk` |
 | `DAMAI_COOKIE2` | 大麦 cookies 中的 `cookie2` |
-| `DEEPSEEK_API_KEY` | DeepSeek API 密钥（用于 AI 信息提取） |
+| `DEEPSEEK_API_KEY` | 可选的 DeepSeek 密钥，用于结构化社交内容提取；未设置时使用确定性解析 |
 | `COMI_EXPORT_PATH` | 导出路径（可选，默认输出到项目目录） |
 
 ## 与博客集成

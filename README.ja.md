@@ -29,6 +29,8 @@ python main.py notify   # 通知をプッシュ（キーの設定が必要）
 python main.py run      # ワンクリックで全実行
 ```
 
+任意のモデル抽出を使う場合は `pip install openai`（または `uv sync --extra llm --no-install-project`）を実行し、`DEEPSEEK_API_KEY` を設定してください。SDK またはキーがなければ、投稿をルールで解析します。
+
 ## Docker
 
 ```bash
@@ -63,7 +65,7 @@ NOTIFIERS = {
 | `BILI_BILI_JCT` | B站 cookies の `bili_jct` |
 | `DAMAI_M_H5_TK` | 大麥 cookies の `m_h5_tk` |
 | `DAMAI_COOKIE2` | 大麥 cookies の `cookie2` |
-| `DEEPSEEK_API_KEY` | DeepSeek API キー（AI情報抽出用） |
+| `DEEPSEEK_API_KEY` | 任意の DeepSeek キー（ソーシャル投稿の構造化抽出用）。未設定時は決定的な解析を使用 |
 | `COMI_EXPORT_PATH` | エクスポートパス（オプション、デフォルトはプロジェクトディレクトリ） |
 
 ## ブログ連携

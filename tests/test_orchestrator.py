@@ -84,6 +84,33 @@ def test_orchestrator_run_batch_success():
         assert task_session.commit.called
 
 
+def test_orchestrator_stores_structured_weibo_events():
+    import asyncio
+
+    from pipeline.orchestrator import Orchestrator
+
+    class WeiboScraper:
+        platform = "weibo"
+
+        async def scrape(self):
+            return [{
+                "title": "上海漫展", "city": "上海", "date": "2026-10-01",
+                "url": "https://example.com/event", "confidence": 0.85,
+            }]
+
+    session = MagicMock()
+    with patch("pipeline.orchestrator.get_session", return_value=session), \
+         patch("pipeline.orchestrator.upsert_event") as upsert:
+        orchestrator = Orchestrator()
+        asyncio.run(orchestrator._run_batch([WeiboScraper], "social"))
+
+    upsert.assert_called_once()
+    event = upsert.call_args.args[1]
+    assert event.title == "上海漫展"
+    assert event.ticket_url == "https://example.com/event"
+    session.commit.assert_called_once()
+
+
 def test_orchestrator_run_batch_failure():
     from pipeline.orchestrator import Orchestrator
     orch = Orchestrator()

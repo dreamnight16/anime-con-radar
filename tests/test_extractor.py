@@ -11,6 +11,25 @@ def test_extract_events_skips_empty_text():
     assert extract_events("test", [{"text": ""}]) == []
 
 
+def test_extract_events_skips_ordinary_post_with_single_character_hui():
+    item = {"text": "今天开会讨论项目，天气也不错", "url": "https://example.com/post"}
+    assert extract_events("weibo", [item]) == []
+
+
+def test_extract_events_accepts_activity_with_context():
+    item = {
+        "text": "上海音乐会将于2026年6月1日在大剧院举办",
+        "url": "https://example.com/post",
+    }
+    with patch("pipeline.extractor.extract_city", return_value="上海"), \
+         patch("pipeline.extractor.extract_date", return_value="2026-06-01"):
+        events = extract_events("weibo", [item])
+
+    assert len(events) == 1
+    assert events[0].city == "上海"
+    assert events[0].start_date == "2026-06-01"
+
+
 def test_extract_title_with_event_pattern():
     title = _extract_title("【重磅】第十届上海CP漫展即将开幕！")
     assert "漫展" in title
