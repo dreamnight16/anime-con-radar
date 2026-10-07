@@ -46,7 +46,7 @@ jobs:
           uv sync --locked --extra dev --no-install-project
           uv pip install pip-audit
       - name: Security scan
-        run: uv run --no-sync bandit -r . -x tests/,.venv/ -ll
+        run: uv run --no-sync bandit -r . -x ./tests,./.venv -ll
       - name: Audit dependencies for known vulnerabilities
         run: uv run --no-sync pip-audit
 
