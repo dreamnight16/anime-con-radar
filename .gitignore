@@ -11,3 +11,7 @@ data/
 .venv/
 .pytest_cache/
 *.pyc
+
+# 独立站数据：由每日抓取任务提交，需入库
+!web/src/data/
+!web/src/data/events.json

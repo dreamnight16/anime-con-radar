@@ -1,0 +1,154 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const {
+  title,
+  description = 'ComiRadar — 全国漫展、同人展与二次元演出雷达，多平台自动抓取。',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <link rel="stylesheet" href="/vendor/dndl/tokens.css" />
+    <link rel="stylesheet" href="/vendor/dndl/materials.css" />
+    <link rel="stylesheet" href="/vendor/dndl/motion.css" />
+  </head>
+  <body>
+    <a class="skip dn-focus" href="#main">跳至内容</a>
+    <header class="site-header dn-acrylic">
+      <a class="wordmark dn-focus" href="/">ComiRadar<span>/ 漫展雷达</span></a>
+      <nav aria-label="相关链接">
+        <a class="dn-focus" href="https://github.com/dreamnight16/anime-con-radar" target="_blank" rel="noopener">GitHub ↗</a>
+        <a class="dn-focus" href="https://dreamnight.net.cn" target="_blank" rel="noopener">DreamNight ↗</a>
+      </nav>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <p>数据由抓取任务每日自动更新（UTC 02:00） · 静态构建，无实时请求</p>
+      <a class="dn-focus" href="#main">回到顶部 ↑</a>
+    </footer>
+    <style is:global>
+      /* 站点样式：只引用 DNDL Tokens，不覆写品牌原始值 */
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--dn-canvas);
+        color: var(--dn-text-primary);
+        font-family: var(--dn-font);
+        font-size: var(--dn-size-body);
+        line-height: var(--dn-leading-body);
+      }
+      :focus-visible {
+        outline: var(--dn-focus-width) solid var(--dn-focus);
+        outline-offset: var(--dn-focus-offset);
+      }
+      .skip {
+        position: absolute;
+        left: 1rem;
+        top: 0;
+        transform: translateY(-200%);
+        background: var(--dn-surface);
+        color: var(--dn-text-primary);
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--dn-control-border);
+        z-index: var(--dn-z-modal);
+        text-decoration: none;
+      }
+      .skip:focus {
+        transform: translateY(0.5rem);
+      }
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: var(--dn-z-floating);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem clamp(1rem, 4vw, 3rem);
+      }
+      .wordmark {
+        font-size: 1.05rem;
+        font-weight: 600;
+        letter-spacing: 0.4px;
+        color: var(--dn-text-primary);
+        text-decoration: none;
+      }
+      .wordmark span {
+        color: var(--dn-text-secondary);
+        font-weight: 400;
+      }
+      .site-header nav a {
+        margin-left: 1.25rem;
+        color: var(--dn-text-secondary);
+        text-decoration: none;
+      }
+      .site-header nav a:hover {
+        color: var(--dn-text-primary);
+        text-decoration: underline;
+        text-underline-offset: 4px;
+      }
+      main {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: clamp(1.25rem, 4vw, 2.5rem);
+      }
+      .site-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        max-width: 960px;
+        margin: 4rem auto 0;
+        padding: 1.5rem clamp(1.25rem, 4vw, 2.5rem);
+        border-top: 1px solid var(--dn-divider);
+        color: var(--dn-text-secondary);
+        font-size: 0.85rem;
+      }
+      .site-footer a {
+        color: var(--dn-text-secondary);
+      }
+      .kicker {
+        margin: 0 0 0.75rem;
+        font-size: var(--dn-size-kicker);
+        font-weight: var(--dn-weight-kicker);
+        letter-spacing: var(--dn-tracking-kicker);
+        text-transform: uppercase;
+        color: var(--dn-text-secondary);
+      }
+      h1 {
+        margin: 0;
+        font-weight: var(--dn-weight-display);
+        font-size: var(--dn-size-h1);
+        line-height: 1.15;
+      }
+      h2 {
+        margin: 0;
+        font-weight: var(--dn-weight-display);
+        font-size: var(--dn-size-h2);
+        line-height: 1.2;
+      }
+      @media (max-width: 640px) {
+        .site-header {
+          flex-wrap: wrap;
+        }
+        .site-header nav a {
+          margin-left: 0;
+          margin-right: 1rem;
+        }
+      }
+    </style>
+  </body>
+</html>

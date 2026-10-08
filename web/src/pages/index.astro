@@ -1,0 +1,212 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import rawEvents from '../data/events.json';
+
+interface EventItem {
+  id: string;
+  sourceName: string;
+  title: string;
+  category: string;
+  city: string;
+  venue: string;
+  startDate: string;
+  endDate: string | null;
+  priceRange: string | null;
+  ticketUrl: string | null;
+  status: string;
+  scrapedAt: string | null;
+}
+
+const events = rawEvents as unknown as EventItem[];
+
+const now = new Date();
+now.setHours(0, 0, 0, 0);
+const upcoming = events
+  .filter((e) => new Date(e.endDate || e.startDate) >= now)
+  .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+// 按月份分组
+const months = new Map<string, EventItem[]>();
+for (const e of upcoming) {
+  const key = e.startDate.slice(0, 7);
+  if (!months.has(key)) months.set(key, []);
+  months.get(key)!.push(e);
+}
+
+// 数据新鲜度：取最新抓取时间（来自数据本身，不虚构）
+const latestScraped = events
+  .map((e) => e.scrapedAt)
+  .filter((s): s is string => Boolean(s))
+  .sort()
+  .at(-1);
+const latestLabel = latestScraped
+  ? new Date(latestScraped).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false })
+  : null;
+
+const monthLabel = (key: string) => {
+  const [y, m] = key.split('-');
+  return `${y} 年 ${Number(m)} 月`;
+};
+const fullDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' });
+---
+
+<BaseLayout title="ComiRadar — 全国漫展雷达">
+  <section class="hero" aria-labelledby="hero-title">
+    <p class="kicker">COMIRADAR · 漫展雷达</p>
+    <h1 id="hero-title">全国漫展与二次元演出</h1>
+    <p class="stats">
+      自动抓取自多个票务与社区平台 · 共 <strong>{upcoming.length}</strong> 场进行中或即将开始
+      {latestLabel && <> · 数据抓取于 {latestLabel}</>}
+    </p>
+  </section>
+
+  {[...months.entries()].map(([key, list]) => (
+    <section class="month" aria-label={monthLabel(key)}>
+      <h2 class="month-head">{monthLabel(key)}</h2>
+      <ul class="list">
+        {list.map((event) => {
+          const d = new Date(event.startDate);
+          const day = d.getDate();
+          const dow = d.toLocaleDateString('zh-CN', { weekday: 'short' });
+          return (
+            <li>
+              <a
+                class="row dn-interactive dn-focus"
+                href={event.ticketUrl || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span class="date">
+                  <span class="day">{day}</span>
+                  <span class="dow">{dow}</span>
+                </span>
+                <span class="main">
+                  <span class="title-line">
+                    <span class="title">{event.title}</span>
+                    {event.status && <span class="chip chip-status">{event.status}</span>}
+                  </span>
+                  <span class="meta">
+                    <span>{fullDate(event.startDate)}{event.endDate && event.endDate !== event.startDate ? ` — ${fullDate(event.endDate)}` : ''}</span>
+                    {event.city && <span>{event.city}</span>}
+                    {event.venue && <span>{event.venue}</span>}
+                    {event.priceRange && event.priceRange !== '待定' && <span>{event.priceRange}</span>}
+                    <span class="chip">{event.category}</span>
+                    <span class="chip">via {event.sourceName}</span>
+                  </span>
+                </span>
+                <span class="go" aria-hidden="true">↗</span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  ))}
+
+  {upcoming.length === 0 && <p class="empty">暂无演出数据（等待下一次抓取）。</p>}
+</BaseLayout>
+
+<style>
+  .hero {
+    padding: clamp(2rem, 7vw, 4.5rem) 0 clamp(1.5rem, 4vw, 2.5rem);
+  }
+  .stats {
+    margin: 1.25rem 0 0;
+    color: var(--dn-text-secondary);
+  }
+  .stats strong {
+    color: var(--dn-text-primary);
+    font-weight: 600;
+  }
+  .month {
+    margin-bottom: 2.5rem;
+  }
+  .month-head {
+    padding: 0.5rem 0;
+    border-bottom: 2px solid var(--dn-text-primary);
+    margin-bottom: 0;
+  }
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .list li {
+    border-bottom: 1px solid var(--dn-divider);
+  }
+  .row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.9rem 0.5rem;
+    color: inherit;
+    text-decoration: none;
+  }
+  .row:hover {
+    background: var(--dn-surface);
+  }
+  .date {
+    flex-shrink: 0;
+    width: 3.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+  }
+  .day {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+  .dow {
+    font-size: 0.75rem;
+    color: var(--dn-text-secondary);
+  }
+  .main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .title-line {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .title {
+    font-weight: 600;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+    color: var(--dn-text-secondary);
+  }
+  .chip {
+    display: inline-block;
+    padding: 0 0.4rem;
+    border: 1px solid var(--dn-divider);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--dn-text-secondary);
+  }
+  .chip-status {
+    background: var(--dn-emerald);
+    border-color: var(--dn-emerald);
+    color: var(--dn-text-on-color);
+    font-weight: 600;
+  }
+  .go {
+    flex-shrink: 0;
+    color: var(--dn-text-secondary);
+    padding-top: 0.35rem;
+  }
+  .empty {
+    color: var(--dn-text-secondary);
+    padding: 3rem 0;
+    text-align: center;
+  }
+</style>
