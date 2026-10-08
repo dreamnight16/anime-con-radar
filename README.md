@@ -70,7 +70,7 @@ NOTIFIERS = {
 
 ## Blog Integration
 
-This repo is included as a git submodule in [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki). GitHub Actions runs the scraper on schedule, and results auto-sync to the [events page](https://dreamnight.net.cn/anime-events).
+This repo is included as a git submodule in [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki). GitHub Actions runs the scraper on schedule, and results auto-sync to the [events page](https://comi.dreamnight.net.cn).
 
 ## Tech Stack
 

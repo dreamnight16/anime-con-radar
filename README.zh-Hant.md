@@ -70,7 +70,7 @@ NOTIFIERS = {
 
 ## 與部落格整合
 
-本倉庫透過 git submodule 引入 [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki)，由 GitHub Actions 定時執行，資料自動更新到 [演出頁面](https://dreamnight.net.cn/anime-events)。
+本倉庫透過 git submodule 引入 [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki)，由 GitHub Actions 定時執行，資料自動更新到 [演出頁面](https://comi.dreamnight.net.cn)。
 
 ## 技術棧
 

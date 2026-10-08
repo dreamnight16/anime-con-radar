@@ -70,7 +70,7 @@ NOTIFIERS = {
 
 ## 与博客集成
 
-本仓库通过 git submodule 引入 [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki)，由 GitHub Actions 定时运行，数据自动更新到 [演出页面](https://dreamnight.net.cn/anime-events)。
+本仓库通过 git submodule 引入 [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki)，由 GitHub Actions 定时运行，数据自动更新到 [演出页面](https://comi.dreamnight.net.cn)。
 
 ## 技术栈
 

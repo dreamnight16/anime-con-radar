@@ -70,7 +70,7 @@ NOTIFIERS = {
 
 ## ブログ連携
 
-このリポジトリは git submodule として [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki) を導入しており、GitHub Actions で定期的に実行され、データは [イベントページ](https://dreamnight.net.cn/anime-events) に自動反映されます。
+このリポジトリは git submodule として [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki) を導入しており、GitHub Actions で定期的に実行され、データは [イベントページ](https://comi.dreamnight.net.cn) に自動反映されます。
 
 ## 技術スタック
 
