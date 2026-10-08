@@ -1,0 +1,134 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EventRows from '../../components/EventRows.astro';
+import {
+  byMonth,
+  categoryBuckets,
+  categoryColor,
+  categoryEn,
+  categorySlug,
+  cityBuckets,
+  phaseOf,
+  records,
+} from '../../lib/events';
+
+export function getStaticPaths() {
+  return categoryBuckets().map((cat) => ({
+    params: { category: cat.slug },
+    props: { name: cat.name },
+  }));
+}
+
+const { name } = Astro.props as { name: string };
+const meta = categoryBuckets().find((c) => c.slug === categorySlug(name))!;
+
+const subset = records
+  .filter((e) => e.category === name)
+  .sort((a, b) => a.startDate.localeCompare(b.startDate));
+const ongoing = subset.filter((e) => phaseOf(e) === 'ongoing');
+const upcoming = subset.filter((e) => phaseOf(e) === 'upcoming');
+const past = subset
+  .filter((e) => phaseOf(e) === 'past')
+  .sort((a, b) => b.startDate.localeCompare(a.startDate));
+
+const cities = new Map<string, number>();
+for (const e of subset) if (e.city && phaseOf(e) !== 'past') cities.set(e.city, (cities.get(e.city) ?? 0) + 1);
+const topCities = [...cities.entries()].sort((a, b) => b[1] - a[1]);
+const slugOf = new Map(cityBuckets().map((c) => [c.name, c.slug]));
+
+const sections = [
+  { key: 'ongoing', label: `${name} · 进行中`, note: '展期覆盖今天', items: ongoing },
+  { key: 'upcoming', label: `${name} · 即将开始`, note: '开始日期在今天之后', items: upcoming },
+];
+const pastBuckets = byMonth(past);
+
+let cursor = 0;
+const withIndex = sections.map((section) => {
+  const buckets = byMonth(section.items);
+  const start = cursor;
+  cursor += buckets.reduce((n, b) => n + b.groups.length, 0);
+  return { ...section, buckets, start };
+});
+const pastStart = cursor;
+---
+
+<BaseLayout
+  title={`${name} — ComiRadar 漫展雷达`}
+  description={`全国 ${name} 记录，共 ${meta.count} 条，其中尚未结束 ${ongoing.length + upcoming.length} 条。`}
+  active="events"
+>
+  <section class="field" style={`--cr-field: ${categoryColor(name)}`} aria-labelledby="cat-title">
+    <div class="wrap hero-grid hero-grid--page">
+      <div>
+        <p class="kicker">{categoryEn(name)} · {name}</p>
+        <h1 class="hero-title" id="cat-title">{name} <span aria-hidden="true">／</span> {ongoing.length + upcoming.length} 场尚未结束</h1>
+        <p class="hero-lede hero-lede--tight">
+          共 {meta.count} 条记录：进行中 {ongoing.length} 条，即将开始 {upcoming.length} 条，已结束 {past.length} 条。
+          {topCities.length > 0 && <>尚未结束的记录主要分布在：{topCities.slice(0, 5).map(([c, n]) => `${c} ${n}`).join(' · ')}。</>}
+        </p>
+      </div>
+      <div>
+        <p class="hero-stamp hero-stamp--flush">
+          <a href="/events/">← 全部活动</a>
+          {topCities.length > 0 && (
+            <>
+              <br />
+              城市页：
+              {topCities
+                .filter(([c]) => slugOf.has(c))
+                .slice(0, 3)
+                .map(([c], i) => (
+                  <>
+                    {i > 0 && ' · '}
+                    <a href={`/city/${slugOf.get(c)}/`}>{c}</a>
+                  </>
+                ))}
+            </>
+          )}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    {withIndex.map((section) => (
+      <section class="phase-section" data-phase-section={section.key} aria-labelledby={`k-${section.key}`}>
+        <div class="phase-head">
+          <h2 id={`k-${section.key}`}>{section.label}</h2>
+          <span class="count">{section.items.length} 条记录 · {section.note}</span>
+        </div>
+        {section.buckets.length === 0 && <p class="empty-note">当前快照中没有处于此阶段的 {name} 记录。</p>}
+        {section.buckets.map((bucket) => (
+          <div class="month">
+            <div class="month-head">
+              <span class="m-label">{bucket.label}</span>
+              <span class="m-count">{bucket.count} 条记录</span>
+            </div>
+            <EventRows groups={bucket.groups} startIndex={section.start} />
+          </div>
+        ))}
+      </section>
+    ))}
+
+    {past.length > 0 && (
+      <section class="phase-section" aria-labelledby="k-past">
+        <div class="phase-head">
+          <h2 id="k-past">已结束</h2>
+          <span class="count">{past.length} 条记录 · 保留用于回顾</span>
+        </div>
+        <details class="archive">
+          <summary class="archive-sum dn-focus">展开已结束的 {past.length} 条记录</summary>
+          {pastBuckets.map((bucket) => (
+            <div class="month">
+              <div class="month-head">
+                <span class="m-label">{bucket.label}</span>
+                <span class="m-count">{bucket.count} 条记录</span>
+              </div>
+              <EventRows groups={bucket.groups} startIndex={pastStart} />
+            </div>
+          ))}
+        </details>
+      </section>
+    )}
+  </div>
+</BaseLayout>

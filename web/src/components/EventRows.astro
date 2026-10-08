@@ -1,0 +1,158 @@
+---
+import {
+  type EventGroup,
+  categoryColor,
+  cityLabel,
+  dateParts,
+  enterIndex,
+  phaseOf,
+  priceLabel,
+  rangeLabel,
+  phaseNote,
+  reliabilityOf,
+  snapshotTimes,
+  sourceLabel,
+  titleParts,
+  venueLabel,
+} from '../lib/events';
+
+interface Props {
+  groups: EventGroup[];
+  /** 交错入场索引的起点，用于让同一页面的多段列表保持连续节奏。 */
+  startIndex?: number;
+}
+
+const { groups, startIndex = 0 } = Astro.props;
+
+const phaseName: Record<string, string> = {
+  ongoing: '进行中',
+  upcoming: '即将开始',
+  past: '已结束',
+};
+---
+
+<ul class="ev-list">
+  {groups.map((group, i) => {
+    const e = group.rep;
+    const phase = phaseOf(e);
+    const { headline, excerpt, full } = titleParts(e);
+    const parts = dateParts(e.startDate);
+    const reliability = reliabilityOf(e);
+    const venue = venueLabel(e);
+    const price = priceLabel(e);
+    const stamp = snapshotTimes(e.scrapedAt);
+    const search = [headline, full, e.city, e.venue, e.category, sourceLabel(e.sourceName), e.status]
+      .filter(Boolean)
+      .join(' ');
+    return (
+      <li
+        class="ev dn-rise"
+        data-category={e.category}
+        data-city={e.city}
+        data-source={e.sourceName}
+        data-source-type={e.sourceType}
+        data-phase={phase}
+        data-search={search}
+        style={`--dn-enter-index: ${enterIndex(startIndex + i)}`}
+      >
+        <details class="ev-details">
+          <summary class="ev-sum">
+            <span class="ev-date" style={`--seg-color: ${categoryColor(e.category)}`}>
+              <span class="ev-day">{parts.d}</span>
+              <span class="ev-dow">{parts.weekday}</span>
+              <span class="ev-mon">{parts.m} 月</span>
+            </span>
+            <span class="ev-body">
+              <span class="ev-title">{headline}</span>
+              {excerpt && <span class="ev-excerpt">{excerpt}</span>}
+              <span class="ev-meta">
+                <span>{rangeLabel(e)}</span>
+                <span>{cityLabel(e)}</span>
+                {venue && <span>{venue}</span>}
+                {phase !== 'past' && <span>{phaseNote(e)}</span>}
+                <span class="tag" style={`border-color: ${categoryColor(e.category)}; color: var(--dn-text-primary)`}>
+                  {e.category}
+                </span>
+                <span class={e.status === '售票中' ? 'tag tag-status' : 'tag tag-pending'}>{e.status}</span>
+                <span class="tag">{sourceLabel(e.sourceName)} · {reliability.short}</span>
+                {group.copies > 1 && <span class="tag tag-dup">同源重复 ×{group.copies}</span>}
+              </span>
+            </span>
+            <span class="ev-toggle">
+              <span class="ev-toggle-open">详情</span>
+              <span class="ev-toggle-close">收起</span>
+            </span>
+          </summary>
+
+          <div class="ev-panel">
+            <dl class="ev-panel-inner">
+              <div class="ev-fact">
+                <dt>活动时间</dt>
+                <dd>{rangeLabel(e)}</dd>
+              </div>
+              <div class="ev-fact">
+                <dt>阶段</dt>
+                <dd>{phaseName[phase]}{phase !== 'past' && ` · ${phaseNote(e)}`}</dd>
+              </div>
+              <div class="ev-fact">
+                <dt>城市</dt>
+                <dd>{cityLabel(e)}</dd>
+              </div>
+              <div class="ev-fact">
+                <dt>场地</dt>
+                <dd>{venue ?? (e.sourceType === 'ticketing' ? '票务平台未提供' : '社交动态未提供可信场地')}</dd>
+              </div>
+              <div class="ev-fact">
+                <dt>票价</dt>
+                <dd>{price ?? '未公布（原始数据为「待定」或为空）'}</dd>
+              </div>
+              <div class="ev-fact">
+                <dt>来源</dt>
+                <dd>
+                  {sourceLabel(e.sourceName)} · {e.sourceType === 'ticketing' ? '票务平台' : '社交平台'}
+                </dd>
+              </div>
+              <div class="ev-fact">
+                <dt>可信度</dt>
+                <dd>{reliability.label}（抓取置信度 {e.confidence.toFixed(2)}）— {reliability.note}</dd>
+              </div>
+              <div class="ev-fact">
+                <dt>入库时间</dt>
+                <dd>{stamp ? `${stamp.cst} · ${stamp.utc}` : '数据未提供'}</dd>
+              </div>
+              <div class="ev-fact">
+                <dt>记录 ID</dt>
+                <dd>{e.id}</dd>
+              </div>
+            </dl>
+
+            {excerpt && (
+              <div>
+                <p class="kicker">原始文本</p>
+                <p class="ev-quote">{full}</p>
+              </div>
+            )}
+
+            {group.copies > 1 && (
+              <p class="filter-summary">
+                数据来源中含有 {group.copies} 条同源重复记录（相同来源、日期与标题），此处合并展示，未丢弃任何记录。
+              </p>
+            )}
+
+            <div class="ev-actions">
+              {e.ticketUrl ? (
+                <a class="btn btn-primary dn-interactive dn-focus" href={e.ticketUrl} target="_blank" rel="noopener noreferrer">
+                  前往票务平台购票 ↗
+                </a>
+              ) : (
+                <p class="filter-summary">
+                  该记录来自社交平台动态，暂无可靠购票链接；请以主办方公布信息为准。
+                </p>
+              )}
+            </div>
+          </div>
+        </details>
+      </li>
+    );
+  })}
+</ul>

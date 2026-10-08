@@ -1,212 +1,236 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import rawEvents from '../data/events.json';
+import {
+  cityBuckets,
+  categoryBuckets,
+  ongoing,
+  upcoming,
+  snapshot,
+  snapshotTimes,
+  sourceBuckets,
+  sourceLabel,
+  dateParts,
+  rangeLabel,
+  phaseNote,
+  RELIABILITY_NOTE,
+  categoryColor,
+  categoryEn,
+  cityLabel,
+  venueLabel,
+  titleParts,
+  groupEvents,
+} from '../lib/events';
 
-interface EventItem {
-  id: string;
-  sourceName: string;
-  title: string;
-  category: string;
-  city: string;
-  venue: string;
-  startDate: string;
-  endDate: string | null;
-  priceRange: string | null;
-  ticketUrl: string | null;
-  status: string;
-  scrapedAt: string | null;
+const stamp = snapshotTimes(snapshot.pendingScrapedAt);
+
+const band = [
+  { key: 'ongoing', name: '进行中', num: snapshot.ongoing, color: 'var(--dn-emerald)', note: '今天仍在展期内', href: '#focus' },
+  { key: 'upcoming', name: '即将开始', num: snapshot.upcoming, color: 'var(--dn-cyan)', note: '开始日期在今天之后', href: '/events/' },
+  { key: 'past', name: '已结束', num: snapshot.past, color: 'var(--dn-steel)', note: '结束日期早于今天', href: '/events/#past' },
+];
+
+const categories = categoryBuckets();
+const cities = cityBuckets();
+
+// 焦点：最接近今天的 3 场（进行中优先）。同一天只取一场，
+// 避免同源近似记录在首页并排出现；被略过的记录仍完整保留在活动列表中。
+const soon: typeof ongoing = [];
+for (const e of [...ongoing, ...upcoming]) {
+  if (soon.length === 3) break;
+  if (soon.some((picked) => picked.startDate === e.startDate)) continue;
+  soon.push(e);
 }
+const focus = soon.map((e) => ({
+  e,
+  title: titleParts(e).headline,
+  parts: dateParts(e.startDate),
+  venue: venueLabel(e),
+  external: Boolean(e.ticketUrl),
+  href: e.ticketUrl ?? '/events/',
+}));
 
-const events = rawEvents as unknown as EventItem[];
-
-const now = new Date();
-now.setHours(0, 0, 0, 0);
-const upcoming = events
-  .filter((e) => new Date(e.endDate || e.startDate) >= now)
-  .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-
-// 按月份分组
-const months = new Map<string, EventItem[]>();
-for (const e of upcoming) {
-  const key = e.startDate.slice(0, 7);
-  if (!months.has(key)) months.set(key, []);
-  months.get(key)!.push(e);
-}
-
-// 数据新鲜度：取最新抓取时间（来自数据本身，不虚构）
-const latestScraped = events
-  .map((e) => e.scrapedAt)
-  .filter((s): s is string => Boolean(s))
-  .sort()
-  .at(-1);
-const latestLabel = latestScraped
-  ? new Date(latestScraped).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false })
-  : null;
-
-const monthLabel = (key: string) => {
-  const [y, m] = key.split('-');
-  return `${y} 年 ${Number(m)} 月`;
-};
-const fullDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' });
+const sources = sourceBuckets();
+const verified = sources.filter((s) => s.sourceType === 'ticketing');
+const unverified = sources.filter((s) => s.sourceType !== 'ticketing');
+const unparsedCity = snapshot.total - snapshot.withCity;
+const dupGroups = groupEvents([...ongoing, ...upcoming]).filter((g) => g.copies > 1).length;
 ---
 
-<BaseLayout title="ComiRadar — 全国漫展雷达">
-  <section class="hero" aria-labelledby="hero-title">
-    <p class="kicker">COMIRADAR · 漫展雷达</p>
-    <h1 id="hero-title">全国漫展与二次元演出</h1>
-    <p class="stats">
-      自动抓取自多个票务与社区平台 · 共 <strong>{upcoming.length}</strong> 场进行中或即将开始
-      {latestLabel && <> · 数据抓取于 {latestLabel}</>}
-    </p>
+<BaseLayout title="ComiRadar 漫展雷达 — 全国漫展、同人展与 ACG 演出" active="home">
+  <section class="field hero" aria-labelledby="hero-title">
+    <div class="wrap hero-inner">
+      <p class="kicker">ComiRadar · 漫展雷达</p>
+      <h1 id="hero-title">全国漫展、同人展<br />与 ACG 演出</h1>
+      <div class="hero-split">
+        <p class="hero-lede">
+          抓取票务平台与社交公开动态，合并成一份可核对的活动清单：
+          时间、城市、场地、票价与购票入口，并如实标注每条记录的可信度。
+        </p>
+        <p class="hero-stamp">
+          {stamp ? <>数据快照 {stamp.cst} · {stamp.utc}</> : '数据中未提供抓取时间'}
+          <br />
+          本站为静态构建，页面不发起实时请求。
+        </p>
+      </div>
+      <div class="stat-strip">
+        <div class="stat">
+          <span class="stat-num">{snapshot.next30}</span>
+          <span class="stat-label"><b>未来 30 天内开始</b>按活动开始日期统计</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">{snapshot.onSale}</span>
+          <span class="stat-label"><b>票务平台在售</b>含购票链接 {snapshot.withTicketUrl} 条</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">{snapshot.forecast}</span>
+          <span class="stat-label"><b>社交平台预告</b>未经核验，用于提前发现</span>
+        </div>
+      </div>
+    </div>
   </section>
 
-  {[...months.entries()].map(([key, list]) => (
-    <section class="month" aria-label={monthLabel(key)}>
-      <h2 class="month-head">{monthLabel(key)}</h2>
-      <ul class="list">
-        {list.map((event) => {
-          const d = new Date(event.startDate);
-          const day = d.getDate();
-          const dow = d.toLocaleDateString('zh-CN', { weekday: 'short' });
-          return (
-            <li>
+  <nav class="band" aria-label="按阶段浏览">
+    {band.map((seg) => (
+      <a
+        class="band-seg"
+        href={seg.href}
+        style={`--seg-color: ${seg.color}; --seg-grow: ${Math.max(seg.num, 1)}`}
+      >
+        <span class="band-num">{seg.num}</span>
+        <span class="band-name">{seg.name} <span aria-hidden="true">→</span></span>
+        <span class="band-note">{seg.note}</span>
+      </a>
+    ))}
+  </nav>
+
+  <div class="wrap">
+    <section class="section" id="focus" aria-labelledby="focus-title">
+      <div class="section-head">
+        <div>
+          <p class="kicker">Focus</p>
+          <h2 id="focus-title">最近的 {focus.length} 场</h2>
+        </div>
+        <p>按开始日期排序，进行中的活动优先，同一天只取一场 · <a href="/events/">查看全部 {snapshot.total} 条记录 →</a></p>
+      </div>
+
+      {focus.length > 0 ? (
+        <div class="focus-grid">
+          {focus.map((item, i) => (
+            <div class={i === 0 ? 'focus-main' : undefined}>
               <a
-                class="row dn-interactive dn-focus"
-                href={event.ticketUrl || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
+                class="focus-card dn-interactive dn-focus"
+                href={item.href}
+                target={item.external ? '_blank' : undefined}
+                rel={item.external ? 'noopener noreferrer' : undefined}
+                style={`--seg-color: ${categoryColor(item.e.category)}`}
               >
-                <span class="date">
-                  <span class="day">{day}</span>
-                  <span class="dow">{dow}</span>
-                </span>
-                <span class="main">
-                  <span class="title-line">
-                    <span class="title">{event.title}</span>
-                    {event.status && <span class="chip chip-status">{event.status}</span>}
+                <span>
+                  <span class="cat-en">
+                    {categoryEn(item.e.category)} · {item.e.status}
+                    {item.external && <span aria-hidden="true"> ↗</span>}
                   </span>
-                  <span class="meta">
-                    <span>{fullDate(event.startDate)}{event.endDate && event.endDate !== event.startDate ? ` — ${fullDate(event.endDate)}` : ''}</span>
-                    {event.city && <span>{event.city}</span>}
-                    {event.venue && <span>{event.venue}</span>}
-                    {event.priceRange && event.priceRange !== '待定' && <span>{event.priceRange}</span>}
-                    <span class="chip">{event.category}</span>
-                    <span class="chip">via {event.sourceName}</span>
+                  <h3>{item.title}</h3>
+                </span>
+                <span>
+                  <span class="focus-day">{item.parts.d}</span>
+                  <span class="focus-when">
+                    {item.parts.m} 月 · {item.parts.weekday} · {phaseNote(item.e)}
+                  </span>
+                  <span class="focus-meta">
+                    {cityLabel(item.e)} · {item.venue ?? `来源 ${sourceLabel(item.e.sourceName)}`} · {rangeLabel(item.e)}
                   </span>
                 </span>
-                <span class="go" aria-hidden="true">↗</span>
               </a>
-            </li>
-          );
-        })}
-      </ul>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p class="empty-note"><strong>暂无进行中或即将开始的活动。</strong>等待抓取管线下一次运行后数据会重新生成。</p>
+      )}
     </section>
-  ))}
 
-  {upcoming.length === 0 && <p class="empty">暂无演出数据（等待下一次抓取）。</p>}
+    <section class="section" aria-labelledby="cat-title">
+      <div class="section-head">
+        <div>
+          <p class="kicker">Categories</p>
+          <h2 id="cat-title">按类型浏览</h2>
+        </div>
+        <p>色块宽度按该类型尚未结束的记录数分配</p>
+      </div>
+      <div class="cat-band">
+        {categories.map((cat) => (
+          <a
+            class="cat-seg dn-focus"
+            href={`/category/${cat.slug}/`}
+            style={`--seg-color: ${cat.color}; --seg-grow: ${Math.max(cat.upcomingCount, 1)}`}
+          >
+            <span class="cat-en">{cat.en}</span>
+            <span>
+              <span class="cat-name">{cat.name}</span>
+              <span class="cat-count"><b>{cat.upcomingCount}</b>场尚未结束 · 共 {cat.count} 条记录</span>
+            </span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="city-title">
+      <div class="section-head">
+        <div>
+          <p class="kicker">Cities</p>
+          <h2 id="city-title">按城市浏览</h2>
+        </div>
+        <p><a href="/cities/">全部 {cities.length} 个城市 →</a></p>
+      </div>
+      <div class="city-grid">
+        {cities.slice(0, 8).map((city) => (
+          <a class="city-cell dn-focus" href={`/city/${city.slug}/`}>
+            <span class="city-name">{city.name}</span>
+            <span class="city-count">{city.count} 条记录</span>
+          </a>
+        ))}
+      </div>
+      {unparsedCity > 0 && (
+        <p class="filter-summary" style="margin-top: 1rem">
+          另有 {unparsedCity} 条记录未能从原文解析出城市，仅出现在<a href="/events/">全部活动</a>中。
+        </p>
+      )}
+    </section>
+
+    <section class="section prose" aria-labelledby="src-title">
+      <div class="section-head">
+        <div>
+          <p class="kicker">Provenance</p>
+          <h2 id="src-title">数据从哪来</h2>
+        </div>
+        <p><a href="/data/">完整数据说明 →</a></p>
+      </div>
+      <div class="split">
+        <div class="split-cell">
+          <h3>票务平台 · 结构化核验</h3>
+          <p>{verified.map((s) => `${s.label} ${s.count} 条`).join(' · ') || '当前快照中没有票务平台记录'}</p>
+          <p>{RELIABILITY_NOTE.verified}</p>
+        </div>
+        <div class="split-cell">
+          <h3>社交平台 · 未经核验</h3>
+          <p>{unverified.map((s) => `${s.label} ${s.count} 条`).join(' · ') || '当前快照中没有社交平台记录'}</p>
+          <p>{RELIABILITY_NOTE.unverified}</p>
+        </div>
+        <div class="split-cell">
+          <h3>合并与去重</h3>
+          <p>
+            管线对完全相同的事件做 SHA256 指纹比对，并对同城同日近似标题做模糊合并。
+            当前快照中仍有 {dupGroups} 组同源重复记录（共 {snapshot.duplicateRecords} 条），列表里合并展示并明确标注，不隐藏。
+          </p>
+        </div>
+        <div class="split-cell">
+          <h3>更新节奏</h3>
+          <p>
+            抓取任务每日 UTC 02:00 运行一次，产出数据文件提交后由本站重新构建。
+            {stamp && <>本次构建读取的快照为 {stamp.cst}。</>}
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
 </BaseLayout>
-
-<style>
-  .hero {
-    padding: clamp(2rem, 7vw, 4.5rem) 0 clamp(1.5rem, 4vw, 2.5rem);
-  }
-  .stats {
-    margin: 1.25rem 0 0;
-    color: var(--dn-text-secondary);
-  }
-  .stats strong {
-    color: var(--dn-text-primary);
-    font-weight: 600;
-  }
-  .month {
-    margin-bottom: 2.5rem;
-  }
-  .month-head {
-    padding: 0.5rem 0;
-    border-bottom: 2px solid var(--dn-text-primary);
-    margin-bottom: 0;
-  }
-  .list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  .list li {
-    border-bottom: 1px solid var(--dn-divider);
-  }
-  .row {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    padding: 0.9rem 0.5rem;
-    color: inherit;
-    text-decoration: none;
-  }
-  .row:hover {
-    background: var(--dn-surface);
-  }
-  .date {
-    flex-shrink: 0;
-    width: 3.5rem;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-  }
-  .day {
-    font-size: 1.5rem;
-    font-weight: 600;
-    line-height: 1.1;
-  }
-  .dow {
-    font-size: 0.75rem;
-    color: var(--dn-text-secondary);
-  }
-  .main {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-  }
-  .title-line {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-  .title {
-    font-weight: 600;
-  }
-  .meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem 0.9rem;
-    font-size: 0.85rem;
-    color: var(--dn-text-secondary);
-  }
-  .chip {
-    display: inline-block;
-    padding: 0 0.4rem;
-    border: 1px solid var(--dn-divider);
-    font-size: 0.75rem;
-    line-height: 1.5;
-    color: var(--dn-text-secondary);
-  }
-  .chip-status {
-    background: var(--dn-emerald);
-    border-color: var(--dn-emerald);
-    color: var(--dn-text-on-color);
-    font-weight: 600;
-  }
-  .go {
-    flex-shrink: 0;
-    color: var(--dn-text-secondary);
-    padding-top: 0.35rem;
-  }
-  .empty {
-    color: var(--dn-text-secondary);
-    padding: 3rem 0;
-    text-align: center;
-  }
-</style>

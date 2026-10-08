@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import {
+  cityBuckets,
+  phaseOf,
+  snapshot,
+  shortDate,
+  dateParts,
+  RELIABILITY_NOTE,
+} from '../../lib/events';
+
+const cities = cityBuckets().map((city) => {
+  const active = city.groups.filter((g) => phaseOf(g.rep) !== 'past');
+  const next = active.map((g) => g.rep).sort((a, b) => a.startDate.localeCompare(b.startDate))[0] ?? null;
+  return { ...city, activeCount: active.length, next };
+});
+
+const unparsed = snapshot.total - snapshot.withCity;
+---
+
+<BaseLayout
+  title="按城市浏览 — ComiRadar 漫展雷达"
+  description="按城市查看全国漫展、同人展与 ACG 演出的记录分布与最近一场的时间。"
+  active="cities"
+>
+  <section class="field" style="--cr-field: var(--dn-steel)" aria-labelledby="cities-title">
+    <div class="wrap hero-grid hero-grid--page">
+      <div>
+        <p class="kicker">Cities</p>
+        <h1 class="hero-title" id="cities-title">按城市浏览</h1>
+        <p class="hero-lede hero-lede--tight">
+          {snapshot.withCity} 条记录解析出了城市，分布在 {cities.length} 个城市。城市名来自抓取文本，
+          方言写法与行政区划可能不完全统一。
+        </p>
+      </div>
+      <div>
+        <p class="hero-stamp hero-stamp--flush">
+          尚未结束的城市共 {cities.filter((c) => c.activeCount > 0).length} 个
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="section" aria-labelledby="city-list-title">
+      <div class="section-head">
+        <div>
+          <p class="kicker">Index</p>
+          <h2 id="city-list-title">城市索引</h2>
+        </div>
+        <p>按记录数排序 · 「最近一场」只统计尚未结束的活动</p>
+      </div>
+
+      <div class="city-grid">
+        {cities.map((city) => (
+          <a class="city-cell dn-focus" href={`/city/${city.slug}/`}>
+            <span class="city-name">{city.name}</span>
+            <span class="city-count">
+              {city.count} 条记录 · 尚未结束 {city.activeCount} 条
+              {city.next && <> · 最近 <span class="nowrap">{shortDate(city.next.startDate)} {dateParts(city.next.startDate).weekday}</span></>}
+            </span>
+          </a>
+        ))}
+      </div>
+
+      {unparsed > 0 && (
+        <p class="empty-note">
+          <strong>另有 {unparsed} 条记录没有城市信息。</strong>
+          这些记录来自社交平台动态，正文里没有可识别的城市名，因此不会出现在城市索引中，
+          但仍完整保留在<a href="/events/">全部活动</a>里。{RELIABILITY_NOTE.unverified}
+        </p>
+      )}
+    </section>
+  </div>
+</BaseLayout>

@@ -1,0 +1,111 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EventRows from '../../components/EventRows.astro';
+import { byMonth, cityBuckets, citySlug, dateParts, phaseOf, records } from '../../lib/events';
+
+export function getStaticPaths() {
+  return cityBuckets().map((city) => ({
+    params: { city: city.slug },
+    props: { name: city.name },
+  }));
+}
+
+const { name } = Astro.props as { name: string };
+const meta = cityBuckets().find((c) => c.slug === citySlug(name))!;
+
+const inCity = records
+  .filter((e) => e.city === name)
+  .sort((a, b) => a.startDate.localeCompare(b.startDate));
+const ongoing = inCity.filter((e) => phaseOf(e) === 'ongoing');
+const upcoming = inCity.filter((e) => phaseOf(e) === 'upcoming');
+const past = inCity
+  .filter((e) => phaseOf(e) === 'past')
+  .sort((a, b) => b.startDate.localeCompare(a.startDate));
+
+const sections = [
+  { key: 'ongoing', label: `在 ${name} 进行中`, note: '展期覆盖今天', items: ongoing },
+  { key: 'upcoming', label: `${name} 即将开始`, note: '开始日期在今天之后', items: upcoming },
+];
+const pastBuckets = byMonth(past);
+
+// 交错入场索引在多段列表之间保持连续。
+let cursor = 0;
+const withIndex = sections.map((section) => {
+  const buckets = byMonth(section.items);
+  const start = cursor;
+  cursor += buckets.reduce((n, b) => n + b.groups.length, 0);
+  return { ...section, buckets, start };
+});
+const pastStart = cursor;
+
+const nextDate = [...ongoing, ...upcoming].map((e) => e.startDate).sort()[0] ?? null;
+---
+
+<BaseLayout
+  title={`${name} 的漫展与 ACG 演出 — ComiRadar`}
+  description={`${name} 的漫展、同人展与 ACG 演出记录，共 ${meta.count} 条。`}
+  active="cities"
+>
+  <section class="field" style="--cr-field: var(--dn-steel)" aria-labelledby="city-title">
+    <div class="wrap hero-grid hero-grid--page">
+      <div>
+        <p class="kicker">City · {citySlug(name).toUpperCase()}</p>
+        <h1 class="hero-title" id="city-title">{name}</h1>
+        <p class="hero-lede hero-lede--tight">
+          共 {meta.count} 条记录，其中尚未结束 {ongoing.length + upcoming.length} 条。
+          {nextDate
+            ? `最近一场于 ${dateParts(nextDate).m} 月 ${dateParts(nextDate).d} 日（${dateParts(nextDate).weekday}）开始。`
+            : '当前没有尚未结束的记录。'}
+        </p>
+      </div>
+      <div>
+        <p class="hero-stamp hero-stamp--flush">
+          <a href="/cities/">← 返回城市索引</a><br />
+          城市名来自抓取文本，可能包含方言或行政区划写法差异。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    {withIndex.map((section) => (
+      <section class="phase-section" data-phase-section={section.key} aria-labelledby={`c-${section.key}`}>
+        <div class="phase-head">
+          <h2 id={`c-${section.key}`}>{section.label}</h2>
+          <span class="count">{section.items.length} 条记录 · {section.note}</span>
+        </div>
+        {section.buckets.length === 0 && <p class="empty-note">当前快照中没有处于此阶段的记录。</p>}
+        {section.buckets.map((bucket) => (
+          <div class="month">
+            <div class="month-head">
+              <span class="m-label">{bucket.label}</span>
+              <span class="m-count">{bucket.count} 条记录</span>
+            </div>
+            <EventRows groups={bucket.groups} startIndex={section.start} />
+          </div>
+        ))}
+      </section>
+    ))}
+
+    {past.length > 0 && (
+      <section class="phase-section" aria-labelledby="c-past">
+        <div class="phase-head">
+          <h2 id="c-past">已结束</h2>
+          <span class="count">{past.length} 条记录 · 保留用于回顾</span>
+        </div>
+        <details class="archive">
+          <summary class="archive-sum dn-focus">展开已结束的 {past.length} 条记录</summary>
+          {pastBuckets.map((bucket) => (
+            <div class="month">
+              <div class="month-head">
+                <span class="m-label">{bucket.label}</span>
+                <span class="m-count">{bucket.count} 条记录</span>
+              </div>
+              <EventRows groups={bucket.groups} startIndex={pastStart} />
+            </div>
+          ))}
+        </details>
+      </section>
+    )}
+  </div>
+</BaseLayout>

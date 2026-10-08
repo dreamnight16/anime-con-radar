@@ -1,0 +1,259 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EventRows from '../../components/EventRows.astro';
+import {
+  byMonth,
+  cityBuckets,
+  categoryBuckets,
+  ongoing,
+  upcoming,
+  past,
+  records,
+  snapshot,
+  snapshotTimes,
+  sourceLabel,
+} from '../../lib/events';
+
+const stamp = snapshotTimes(snapshot.pendingScrapedAt);
+
+const categories = categoryBuckets();
+const cities = cityBuckets();
+
+// 来源筛选按 sourceType 聚合：平台清单在「数据说明」页展开。
+const sourceTypes = [
+  { value: 'ticketing', label: '票务平台', count: records.filter((e) => e.sourceType === 'ticketing').length },
+  { value: 'social', label: '社交平台', count: records.filter((e) => e.sourceType !== 'ticketing').length },
+].filter((s) => s.count > 0);
+const sourceNames = [...new Set(records.map((e) => sourceLabel(e.sourceName)))].join(' · ');
+
+const sections = [
+  { key: 'ongoing', label: '进行中', note: '展期覆盖今天，仍可前往或留意场次安排', items: ongoing },
+  { key: 'upcoming', label: '即将开始', note: '开始日期在今天之后', items: upcoming },
+];
+
+const pastBuckets = byMonth(past);
+
+let cursor = 0;
+const withIndex = sections.map((section) => {
+  const buckets = byMonth(section.items);
+  const start = cursor;
+  cursor += buckets.reduce((n, b) => n + b.groups.length, 0);
+  return { ...section, buckets, start };
+});
+const pastStart = cursor;
+---
+
+<BaseLayout
+  title="全部活动 — ComiRadar 漫展雷达"
+  description="全部漫展、同人展与 ACG 演出记录，可按类型、城市、来源与阶段筛选。"
+  active="events"
+>
+  <section class="field" style="--cr-field: var(--dn-cyan)" aria-labelledby="events-title">
+    <div class="wrap hero-grid hero-grid--page">
+      <div>
+        <p class="kicker">All events</p>
+        <h1 class="hero-title" id="events-title">全部活动记录</h1>
+        <p class="hero-lede hero-lede--tight">
+          共 {snapshot.total} 条原始记录，其中进行中 {snapshot.ongoing} 条、即将开始 {snapshot.upcoming} 条、已结束 {snapshot.past} 条。
+          每条记录都可展开查看来源、抓取时间与置信度。
+        </p>
+      </div>
+      <div>
+        <p class="hero-stamp hero-stamp--flush">
+          {stamp ? <>数据快照 {stamp.cst} · {stamp.utc}</> : '数据中未提供抓取时间'}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="filter-bar" data-enhanced="off">
+      <div class="filter-row">
+        <span class="kicker">类型</span>
+        <button type="button" class="chip" data-filter="category" data-value="all" aria-pressed="true">全部</button>
+        {categories.map((cat) => (
+          <button type="button" class="chip" data-filter="category" data-value={cat.name} aria-pressed="false">
+            {cat.name} {cat.upcomingCount > 0 ? `${cat.upcomingCount}` : ''}
+          </button>
+        ))}
+      </div>
+      <div class="filter-row">
+        <span class="kicker">来源</span>
+        <button type="button" class="chip" data-filter="source-type" data-value="all" aria-pressed="true">全部</button>
+        {sourceTypes.map((s) => (
+          <button type="button" class="chip" data-filter="source-type" data-value={s.value} aria-pressed="false">
+            {s.label} {s.count}
+          </button>
+        ))}
+        <span class="filter-summary">来源平台：{sourceNames}</span>
+      </div>
+      <div class="filter-row">
+        <span class="kicker">阶段</span>
+        <button type="button" class="chip" data-filter="phase" data-value="all" aria-pressed="true">全部</button>
+        <button type="button" class="chip" data-filter="phase" data-value="ongoing" aria-pressed="false">进行中</button>
+        <button type="button" class="chip" data-filter="phase" data-value="upcoming" aria-pressed="false">即将开始</button>
+        <button type="button" class="chip" data-filter="phase" data-value="past" aria-pressed="false">已结束</button>
+      </div>
+      <div class="filter-row">
+        <span class="kicker">城市</span>
+        <label class="kicker" for="filter-city" style="flex: 0 0 auto">选择</label>
+        <select id="filter-city" class="filter-select" data-filter="city">
+          <option value="all">全部城市</option>
+          {cities.map((city) => <option value={city.name}>{city.name}（{city.count}）</option>)}
+          <option value="__none">城市待确认</option>
+        </select>
+        <label class="kicker" for="filter-q" style="flex: 0 0 auto">搜索</label>
+        <input id="filter-q" class="filter-search" type="search" placeholder="标题、城市、场地、来源" data-filter="q" />
+        <button type="button" class="chip" id="filter-reset">重置</button>
+      </div>
+      <p class="filter-summary" id="filter-summary" aria-live="polite">
+        显示 {snapshot.total} / {snapshot.total} 条记录
+      </p>
+    </div>
+
+    {withIndex.map((section) => (
+      <section class="phase-section" data-phase-section={section.key} aria-labelledby={`phase-${section.key}`}>
+        <div class="phase-head">
+          <h2 id={`phase-${section.key}`}>{section.label}</h2>
+          <span class="count">{section.items.length} 条记录 · {section.note}</span>
+        </div>
+        {section.buckets.length === 0 && (
+          <p class="empty-note">当前快照中没有处于此阶段的活动。</p>
+        )}
+        {section.buckets.map((bucket) => (
+          <div class="month" data-month>
+            <div class="month-head">
+              <span class="m-label">{bucket.label}</span>
+              <span class="m-count">{bucket.count} 条记录</span>
+            </div>
+            <EventRows groups={bucket.groups} startIndex={section.start} />
+          </div>
+        ))}
+      </section>
+    ))}
+
+    <section class="phase-section" data-phase-section="past" aria-labelledby="phase-past">
+      <div class="phase-head">
+        <h2 id="phase-past">已结束</h2>
+        <span class="count">{past.length} 条记录 · 保留用于回顾与数据核对</span>
+      </div>
+      <details class="archive" id="past">
+        <summary class="archive-sum dn-focus">展开已结束的 {past.length} 条记录</summary>
+        {pastBuckets.map((bucket) => (
+          <div class="month" data-month>
+            <div class="month-head">
+              <span class="m-label">{bucket.label}</span>
+              <span class="m-count">{bucket.count} 条记录</span>
+            </div>
+            <EventRows groups={bucket.groups} startIndex={pastStart} />
+          </div>
+        ))}
+      </details>
+    </section>
+
+    <p class="empty-note" id="filter-empty" hidden>
+      <strong>没有符合当前筛选条件的记录。</strong>调整上方筛选或点击「重置」查看全部。
+    </p>
+  </div>
+
+  <script>
+    // 渐进增强的客户端筛选：默认状态（无 JS）会完整展示全部记录，
+    // 筛选只在已有 DOM 上切换 hidden，不重排、不重播入场动画。
+    const bar = document.querySelector<HTMLElement>('.filter-bar');
+    if (bar) {
+      const rows = Array.from(document.querySelectorAll<HTMLElement>('.ev'));
+      const months = Array.from(document.querySelectorAll<HTMLElement>('[data-month]'));
+      const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-phase-section]'));
+      const summary = document.getElementById('filter-summary');
+      const empty = document.getElementById('filter-empty');
+      const query = document.getElementById('filter-q') as HTMLInputElement | null;
+      const citySelect = document.getElementById('filter-city') as HTMLSelectElement | null;
+
+      const state = { category: 'all', 'source-type': 'all', phase: 'all', city: 'all', q: '' };
+
+      const readUrl = () => {
+        const params = new URLSearchParams(location.search);
+        const cat = params.get('cat');
+        if (cat) state.category = cat;
+        const phase = params.get('phase');
+        if (phase) state.phase = phase;
+      };
+
+      const matches = (row: HTMLElement) => {
+        if (state.category !== 'all' && row.dataset.category !== state.category) return false;
+        if (state['source-type'] !== 'all' && row.dataset.sourceType !== state['source-type']) return false;
+        if (state.phase !== 'all' && row.dataset.phase !== state.phase) return false;
+        if (state.city === '__none' && row.dataset.city) return false;
+        if (state.city !== 'all' && state.city !== '__none' && row.dataset.city !== state.city) return false;
+        if (state.q && !(row.dataset.search ?? '').toLowerCase().includes(state.q)) return false;
+        return true;
+      };
+
+      const apply = () => {
+        let shown = 0;
+        for (const row of rows) {
+          const ok = matches(row);
+          row.hidden = !ok;
+          if (ok) shown += 1;
+        }
+        for (const month of months) {
+          month.hidden = !month.querySelector('.ev:not([hidden])');
+        }
+        for (const section of sections) {
+          section.hidden = !section.querySelector('.ev:not([hidden])');
+        }
+        if (summary) summary.textContent = `显示 ${shown} / ${rows.length} 条记录`;
+        if (empty) empty.hidden = shown > 0;
+      };
+
+      const syncChips = () => {
+        for (const chip of bar.querySelectorAll<HTMLButtonElement>('.chip[data-filter]')) {
+          const key = chip.dataset.filter as keyof typeof state;
+          const value = chip.dataset.value ?? 'all';
+          chip.setAttribute('aria-pressed', String(state[key] === value));
+        }
+      };
+
+      for (const chip of bar.querySelectorAll<HTMLButtonElement>('.chip[data-filter]')) {
+        chip.addEventListener('click', () => {
+          const key = chip.dataset.filter as keyof typeof state;
+          state[key] = chip.dataset.value ?? 'all';
+          syncChips();
+          apply();
+        });
+      }
+
+      citySelect?.addEventListener('change', () => {
+        state.city = citySelect.value;
+        apply();
+      });
+
+      query?.addEventListener('input', () => {
+        state.q = query.value.trim().toLowerCase();
+        apply();
+      });
+
+      document.getElementById('filter-reset')?.addEventListener('click', () => {
+        state.category = 'all';
+        state['source-type'] = 'all';
+        state.phase = 'all';
+        state.city = 'all';
+        state.q = '';
+        if (query) query.value = '';
+        if (citySelect) citySelect.value = 'all';
+        syncChips();
+        apply();
+      });
+
+      // 深链：#past 打开归档；?cat= / ?phase= 预置筛选。
+      if (location.hash === '#past') {
+        const archive = document.getElementById('past') as HTMLDetailsElement | null;
+        if (archive) archive.open = true;
+      }
+      readUrl();
+      syncChips();
+      bar.dataset.enhanced = 'on';
+      apply();
+    }
+  </script>
+</BaseLayout>
