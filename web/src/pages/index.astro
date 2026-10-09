@@ -118,11 +118,11 @@ const dupGroups = groupEvents([...ongoing, ...upcoming]).filter((g) => g.copies 
           {focus.map((item, i) => (
             <div class={i === 0 ? 'focus-main' : undefined}>
               <a
-                class="focus-card dn-interactive dn-focus"
+                class="focus-card dn-interactive dn-rise dn-focus"
                 href={item.href}
                 target={item.external ? '_blank' : undefined}
                 rel={item.external ? 'noopener noreferrer' : undefined}
-                style={`--seg-color: ${categoryColor(item.e.category)}`}
+                style={`--seg-color: ${categoryColor(item.e.category)}; --dn-enter-index: ${i}`}
               >
                 <span>
                   <span class="cat-en">
@@ -158,11 +158,11 @@ const dupGroups = groupEvents([...ongoing, ...upcoming]).filter((g) => g.copies 
         <p>色块宽度按该类型尚未结束的记录数分配</p>
       </div>
       <div class="cat-band">
-        {categories.map((cat) => (
+        {categories.map((cat, i) => (
           <a
-            class="cat-seg dn-focus"
+            class="cat-seg dn-interactive dn-rise dn-focus"
             href={`/category/${cat.slug}/`}
-            style={`--seg-color: ${cat.color}; --seg-grow: ${Math.max(cat.upcomingCount, 1)}`}
+            style={`--seg-color: ${cat.color}; --seg-grow: ${Math.max(cat.upcomingCount, 1)}; --dn-enter-index: ${i}`}
           >
             <span class="cat-en">{cat.en}</span>
             <span>
@@ -183,8 +183,8 @@ const dupGroups = groupEvents([...ongoing, ...upcoming]).filter((g) => g.copies 
         <p><a href="/cities/">全部 {cities.length} 个城市 →</a></p>
       </div>
       <div class="city-grid">
-        {cities.slice(0, 8).map((city) => (
-          <a class="city-cell dn-focus" href={`/city/${city.slug}/`}>
+        {cities.slice(0, 8).map((city, i) => (
+          <a class="city-cell dn-rise dn-focus" href={`/city/${city.slug}/`} style={`--dn-enter-index: ${i}`}>
             <span class="city-name">{city.name}</span>
             <span class="city-count">{city.count} 条记录</span>
           </a>

@@ -30,6 +30,9 @@ body {
 
 img { max-width: 100%; }
 
+/* 部分浏览器（如 Safari）给表单控件自带圆角；显式归零以保持直角几何。 */
+button, input, select, textarea { border-radius: 0; }
+
 /* 焦点：统一使用 DNDL 焦点值，任何元素都不移除可见焦点。 */
 :focus-visible {
   outline: var(--dn-focus-width) solid var(--dn-focus);
@@ -83,6 +86,9 @@ a { color: inherit; }
   position: sticky;
   top: 0;
   z-index: var(--dn-z-floating);
+  /* Acrylic 顶栏只保留底边分隔线：去掉其余三边的半透明边框，
+     避免滚动到彩色色块上方时出现浅色接缝。 */
+  border: 0;
   border-bottom: var(--cr-hair);
 }
 .site-header .wrap {
@@ -134,7 +140,8 @@ a { color: inherit; }
 
 .field { background: var(--cr-field, var(--dn-teal)); color: var(--dn-text-on-color); }
 .field .kicker { color: var(--dn-text-on-color); }
-.field a { color: var(--dn-text-on-color); }
+/* 色块上的链接与正文同色，必须保留下划线作为非颜色提示。 */
+.field a { color: var(--dn-text-on-color); text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---------------------------------------------------------------- 首页 Hero */
 
@@ -225,6 +232,7 @@ a { color: inherit; }
   color: var(--dn-text-on-color);
   padding: 1.1rem clamp(1rem, 2.5vw, 1.75rem) 1.25rem;
   text-decoration: none;
+  transition: background-color var(--dn-duration-hover) var(--dn-ease-in);
 }
 /* 悬停只提亮背景，不使用 filter（filter 会连文字一起改变）。 */
 a.band-seg:hover { background: color-mix(in srgb, var(--seg-color, var(--dn-steel)) 90%, var(--dn-surface)); }
@@ -319,6 +327,13 @@ a.band-seg:hover .band-name { text-decoration: underline; text-underline-offset:
 }
 .cat-seg:hover { background: color-mix(in srgb, var(--seg-color, var(--dn-steel)) 90%, var(--dn-surface)); }
 .cat-seg:hover .cat-name { text-decoration: underline; text-underline-offset: 3px; }
+/* 分类色块采用 DNDL 1.1.0 默认反馈（上浮 + Level 2 阴影 + 回弹曲线）；
+   显式合并提亮过渡，避免覆盖 vendor 的动效值。 */
+.cat-seg.dn-interactive {
+  transition: transform var(--dn-duration-expand) var(--dn-ease-snap),
+    box-shadow var(--dn-duration-expand) var(--dn-ease-in),
+    background-color var(--dn-duration-hover) var(--dn-ease-in);
+}
 .cat-en { font-size: var(--dn-size-kicker); font-weight: var(--dn-weight-kicker); letter-spacing: var(--dn-tracking-kicker); text-transform: uppercase; }
 .cat-name { font-family: var(--dn-font-display); font-weight: var(--dn-weight-display); font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.1; }
 .cat-count { font-size: 0.8125rem; }
@@ -339,6 +354,8 @@ a.band-seg:hover .band-name { text-decoration: underline; text-underline-offset:
   border-bottom: var(--cr-hair);
   border-left: 4px solid var(--dn-steel);
   text-decoration: none;
+  transition: background-color var(--dn-duration-hover) var(--dn-ease-in),
+    border-color var(--dn-duration-hover) var(--dn-ease-in);
 }
 .city-cell:hover { background: var(--dn-surface); border-left-color: var(--dn-teal); }
 .city-name { font-family: var(--dn-font-display); font-weight: var(--dn-weight-display); font-size: 1.625rem; line-height: 1.2; display: block; }
@@ -660,6 +677,18 @@ a.band-seg:hover .band-name { text-decoration: underline; text-underline-offset:
   .hero-split { grid-template-columns: minmax(0, 1fr); }
   .focus-grid { grid-template-columns: minmax(0, 1fr); }
   .focus-main { grid-row: auto; }
+}
+/* 窄屏下统计条逐条全宽：横线分隔、统一左对齐，
+   避免换行后出现「左缩进 + 竖向细线」的错位。 */
+@media (max-width: 740px) {
+  .stat-strip .stat {
+    flex-basis: 100%;
+    padding-left: 0;
+    padding-right: 0;
+    border-left: 0;
+    border-top: 1px solid color-mix(in srgb, var(--dn-text-on-color) 20%, transparent);
+  }
+  .stat-strip .stat:first-child { border-top: 0; }
 }
 @media (max-width: 640px) {
   .ev-sum { grid-template-columns: 3.75rem minmax(0, 1fr); }
